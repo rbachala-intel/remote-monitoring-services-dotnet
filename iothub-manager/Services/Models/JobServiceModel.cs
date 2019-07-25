@@ -150,7 +150,8 @@ namespace Microsoft.Azure.IoTSolutions.IotHubManager.Services.Models
     {
         Unknown = 0,
         ScheduleDeviceMethod = 3,
-        ScheduleUpdateTwin = 4
+        ScheduleUpdateTwin = 4,
+        AMT = 5
     }
 
     /// <summary>

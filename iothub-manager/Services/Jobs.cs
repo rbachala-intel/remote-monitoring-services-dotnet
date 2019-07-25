@@ -15,6 +15,7 @@ using JobStatus = Microsoft.Azure.IoTSolutions.IotHubManager.Services.Models.Job
 using JobType = Microsoft.Azure.IoTSolutions.IotHubManager.Services.Models.JobType;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Microsoft.Azure.IoTSolutions.IotHubManager.Services.Diagnostics;
 
 namespace Microsoft.Azure.IoTSolutions.IotHubManager.Services
 {
@@ -39,6 +40,10 @@ namespace Microsoft.Azure.IoTSolutions.IotHubManager.Services
             DateTimeOffset startTimeUtc,
             long maxExecutionTimeInSeconds);
 
+        void SubmitAmtJob(
+            string guid,
+            int action
+        );
         Task<JobServiceModel> ScheduleTwinUpdateAsync(
             string jobId,
             string queryCondition,
@@ -50,20 +55,23 @@ namespace Microsoft.Azure.IoTSolutions.IotHubManager.Services
     public class Jobs : IJobs
     {
         private JobClient jobClient;
+        private IMpsClient mpsClient;
         private RegistryManager registryManager;
         private IDeviceProperties deviceProperties;
 
+        private ILogger logger;
         private const string DEVICE_DETAILS_QUERY_FORMAT = "select * from devices.jobs where devices.jobs.jobId = '{0}'";
         private const string DEVICE_DETAILS_QUERYWITH_STATUS_FORMAT = "select * from devices.jobs where devices.jobs.jobId = '{0}' and devices.jobs.status = '{1}'";
 
-        public Jobs(IServicesConfig config, IDeviceProperties deviceProperties)
+        public Jobs(IServicesConfig config, IDeviceProperties deviceProperties, ILogger logger, IMpsClient mpsClient)
         {
             if (config == null)
             {
                 throw new ArgumentNullException("config");
             }
             this.deviceProperties = deviceProperties;
-
+            this.logger = logger;
+            this.mpsClient = mpsClient;
             IoTHubConnectionHelper.CreateUsingHubConnectionString(
                 config.IoTHubConnString,
                 conn => { this.jobClient = JobClient.CreateFromConnectionString(conn); });
@@ -71,8 +79,15 @@ namespace Microsoft.Azure.IoTSolutions.IotHubManager.Services
             IoTHubConnectionHelper.CreateUsingHubConnectionString(
                 config.IoTHubConnString,
                 conn => { this.registryManager = RegistryManager.CreateFromConnectionString(conn); });
+
         }
 
+        public async void SubmitAmtJob(
+            string guid, int action
+        ){
+            this.logger.Info($"Submitting Amt job for {guid} with aciton {action}", () => {});
+            await this.mpsClient.PowerActionAsync(guid, action);
+        }
         public async Task<IEnumerable<JobServiceModel>> GetJobsAsync(
             JobType? jobType,
             JobStatus? jobStatus,

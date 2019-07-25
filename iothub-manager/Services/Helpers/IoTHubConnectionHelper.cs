@@ -29,5 +29,16 @@ namespace Microsoft.Azure.IoTSolutions.IotHubManager.Services.Helpers
                 throw new InvalidConfigurationException($"Invalid service configuration for HubConnectionString: {hubConnString}. Exception details: {formatException.Message}");
             }
         }
+
+        public static void CreateMpsClient(string mpsServerName, Action<string> action) {
+            try
+            {
+                action(mpsServerName);
+            }
+            catch (System.Exception)
+            {
+                throw new Exception($"MPS Server issues.");
+            }
+        }
     }
 }

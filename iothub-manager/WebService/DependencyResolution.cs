@@ -7,6 +7,7 @@ using Microsoft.Azure.IoTSolutions.IotHubManager.RecurringTasksAgent;
 using Microsoft.Azure.IoTSolutions.IotHubManager.Services;
 using Microsoft.Azure.IoTSolutions.IotHubManager.Services.Diagnostics;
 using Microsoft.Azure.IoTSolutions.IotHubManager.Services.External;
+using Microsoft.Azure.IoTSolutions.IotHubManager.Services.Http;
 using Microsoft.Azure.IoTSolutions.IotHubManager.Services.Runtime;
 using Microsoft.Azure.IoTSolutions.IotHubManager.WebService.Runtime;
 using Microsoft.Extensions.DependencyInjection;
@@ -82,6 +83,9 @@ namespace Microsoft.Azure.IoTSolutions.IotHubManager.WebService
             builder.RegisterType<StorageAdapterClient>().As<IStorageAdapterClient>().SingleInstance();
             builder.RegisterType<DeviceProperties>().As<IDeviceProperties>().SingleInstance();
             builder.RegisterType<UserManagementClient>().As<IUserManagementClient>().SingleInstance();
+            IMpsClient mpsClient = new MpsClient(config.ServicesConfig.MpsServerNameWithPort, new HttpClient(logger), logger);
+            builder.RegisterInstance(mpsClient).As<IMpsClient>().SingleInstance();
+            
         }
 
         private static void RegisterFactory(IContainer container)

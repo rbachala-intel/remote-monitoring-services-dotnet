@@ -9,6 +9,7 @@ using Microsoft.Azure.IoTSolutions.IotHubManager.Services;
 using Microsoft.Azure.IoTSolutions.IotHubManager.Services.Models;
 using Microsoft.Azure.IoTSolutions.IotHubManager.WebService.v1.Filters;
 using Microsoft.Azure.IoTSolutions.IotHubManager.WebService.v1.Models;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.IoTSolutions.IotHubManager.WebService.v1.Controllers
 {
@@ -71,6 +72,11 @@ namespace Microsoft.Azure.IoTSolutions.IotHubManager.WebService.v1.Controllers
         [Authorize("CreateJobs")]
         public async Task<JobApiModel> ScheduleAsync([FromBody] JobApiModel parameter)
         {
+            if (parameter.Type == JobType.AMT) {
+                var actionObj = JsonConvert.DeserializeObject<AmtAction>(parameter.MethodParameter.JsonPayload);
+                this.jobs.SubmitAmtJob(parameter.QueryCondition, actionObj.Action);
+                return new JobApiModel();
+            }
             if (parameter.UpdateTwin != null)
             {
                 var result = await this.jobs.ScheduleTwinUpdateAsync(parameter.JobId, parameter.QueryCondition, parameter.UpdateTwin.ToServiceModel(), parameter.StartTimeUtc ?? DateTime.UtcNow, parameter.MaxExecutionTimeInSeconds ?? 0);

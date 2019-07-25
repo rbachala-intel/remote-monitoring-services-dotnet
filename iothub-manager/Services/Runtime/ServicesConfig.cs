@@ -5,6 +5,7 @@ namespace Microsoft.Azure.IoTSolutions.IotHubManager.Services.Runtime
     public interface IServicesConfig
     {
         string IoTHubConnString { get; set; }
+        string MpsServerNameWithPort { get; set; }
         string StorageAdapterApiUrl { get; }
         string UserManagementApiUrl { get; }
         string DevicePropertiesWhiteList { get; }
@@ -17,6 +18,7 @@ namespace Microsoft.Azure.IoTSolutions.IotHubManager.Services.Runtime
     {
         public string IoTHubConnString { get; set; }
         public string StorageAdapterApiUrl { get; set; }
+        public string MpsServerNameWithPort {get; set;}
         public string UserManagementApiUrl { get; set; }
         public string DevicePropertiesWhiteList { get; set; }
         public long DevicePropertiesTTL { get; set; }

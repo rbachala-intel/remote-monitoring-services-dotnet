@@ -5,9 +5,9 @@
 set -e
 
 # Note: use lowercase names for the Docker images
-DOCKER_IMAGE="azureiotpcs/iothub-manager-dotnet"
+DOCKER_IMAGE="rbachala/iothub-manager-dotnet"
 # "testing" is the latest dev build, usually matching the code in the "master" branch
-DOCKER_TAG="$DOCKER_IMAGE:testing"
+DOCKER_TAG="$DOCKER_IMAGE:1.0.5"
 
 # Debug|Release
 CONFIGURATION=Release
