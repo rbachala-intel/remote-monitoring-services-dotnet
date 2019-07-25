@@ -22,39 +22,45 @@ services:
       - "8080:10080"
     depends_on:
       - webui
-      - auth
-      - iothubmanager
+      - auth-svc
+      - iothub-manager-svc
       - devicesimulation
-      - telemetry
-      - config
+      - telemetry-svc
+      - config-svc
     volumes:
       - ./config/nginx.conf:/app/config/nginx.conf:ro
 
   webui:
-    image: azureiotpcs/pcs-remote-monitoring-webui:testing
+    image: rbachala/pcs-remote-monitoring-webui:1.0.6
+    ports:
+      - "443:443"
     depends_on:
-      - auth
-      - iothubmanager
+      - auth-svc
+      - iothub-manager-svc
       - devicesimulation
-      - telemetry
-      - config
+      - telemetry-svc
+      - config-svc
       - diagnostics
   # NOTE: Volumes disabled for local development, uncomment if enabling auth
   # volumes:
   #   - ./webui-config.js:/app/build/webui-config.js:ro
 
-  auth:
+  auth-svc:
     image: azureiotpcs/pcs-auth-dotnet:testing
+    ports:
+      - "9001:9001"
     environment:
       - PCS_KEYVAULT_NAME
       - PCS_AAD_APPID
       - PCS_AAD_APPSECRET
 
-  iothubmanager:
-    image: azureiotpcs/iothub-manager-dotnet:testing
+  iothub-manager-svc:
+    image: rbachala/iothub-manager-dotnet:1.0.4
+    ports:
+      - "9002:9002"
     depends_on:
-      - auth
-      - storageadapter
+      - auth-svc
+      - storage-adapter-svc
     environment:
       - PCS_KEYVAULT_NAME
       - PCS_AAD_APPID
@@ -63,7 +69,9 @@ services:
   devicesimulation:
     image: azureiotpcs/device-simulation-dotnet:DS-1.0.6
     depends_on:
-      - storageadapter
+      - storage-adapter-svc
+    ports:
+      - "9003:9003"
     environment:
       - PCS_KEYVAULT_NAME
       - PCS_AAD_APPID
@@ -73,41 +81,47 @@ services:
   # volumes:
   #   - ./my-device-models:/app/data:ro
 
-  telemetry:
-    image: azureiotpcs/telemetry-dotnet:testing
+  telemetry-svc:
+    image: rbachala/telemetry-dotnet:1.0.0
+    ports:
+      - "9004:9004"
     depends_on:
-      - auth
-      - storageadapter
+      - auth-svc
+      - storage-adapter-svc
     environment:
       - PCS_KEYVAULT_NAME
       - PCS_AAD_APPID
       - PCS_AAD_APPSECRET
 
-  config:
-    image: azureiotpcs/pcs-config-dotnet:testing
+  config-svc:
+    image: rbachala/pcs-config-dotnet:1.0.0
+    ports:
+      - "9005:9005"
     depends_on:
-      - auth
-      - storageadapter
+      - auth-svc
+      - storage-adapter-svc
       - devicesimulation
-      - telemetry
+      - telemetry-svc
     environment:
       - PCS_KEYVAULT_NAME
       - PCS_AAD_APPID
       - PCS_AAD_APPSECRET
 
-  storageadapter:
-    image: azureiotpcs/pcs-storage-adapter-dotnet:testing
+  storage-adapter-svc:
+    image: rbachala/pcs-storage-adapter-dotnet:1.0.0
+    ports:
+      - "9022:9022"
     environment:
       - PCS_KEYVAULT_NAME
       - PCS_AAD_APPID
       - PCS_AAD_APPSECRET
 
   asamanager:
-    image: azureiotpcs/asa-manager-dotnet:testing
+    image: rbachala/asa-manager-dotnet:1.0.0
     depends_on:
-      - telemetry
-      - iothubmanager
-      - config
+      - telemetry-svc
+      - iothub-manager-svc
+      - config-svc
     environment:
       - PCS_KEYVAULT_NAME
       - PCS_AAD_APPID
@@ -116,7 +130,7 @@ services:
   diagnostics:
     image: azureiotpcs/pcs-diagnostics-dotnet:testing
     depends_on:
-      - config
+      - config-svc
     environment:
       - PCS_KEYVAULT_NAME
       - PCS_AAD_APPID
